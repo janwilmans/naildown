@@ -30,21 +30,65 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// fix relative paths in remote markdown files using https://github.com/monkeysuffrage/phpuri 
-//todo: add embedding anchors ? 
-//todo: add filter on section/anchor in url
+/*
+todos:
+ * if remove markdown files contain relative paths, how are they parsed ? maybe https://github.com/monkeysuffrage/phpuri or pguardiario/phpuri can be used? 
+ * add embedding anchors to headings (H2?) so you can link directly to a sub-chapter ?
+ * add filter on section/anchor in url, so you can embed a chapter of a remote markdown file ? or all chapters starting from a heading?
+       This can be used to have a different intro on github vs wordpress but share the rest of the content, for example to have a different excerpt ?
+ * add/embed https://github.com/google/code-prettify
+*/
 
-require_once 'Michelf/MarkdownExtra.inc.php';
+require __DIR__ . '/vendor/autoload.php';
 require_once 'phpuri.php';
 
-use \Michelf\MarkdownExtra;
-
+add_shortcode('naildown-pretty', 'embed_prettify');
 add_shortcode('naildown', 'embed_markdown');
 
 // https://github.com/janwilmans/depcharter/blob/master/README.md
-// 
-// 
 // https://github.com/janwilmans/depcharter/raw/master/README.md
+
+class NaildownParser extends \cebe\markdown\GithubMarkdown
+{
+    protected function consumeFencedCode($lines, $current)
+    {
+        // create block array
+        $block = [
+            'fencedCode',
+            'content' => [],
+        ];
+        $line = rtrim($lines[$current]);
+
+        // detect language and fence length (can be more than 3 backticks)
+        $fence = substr($line, 0, $pos = strrpos($line, '`') + 1);
+        $language = substr($line, $pos);
+        if (!empty($language)) {
+            $block['language'] = $language;
+        }
+
+        // consume all lines until ```
+        for($i = $current + 1, $count = count($lines); $i < $count; $i++) {
+            if (rtrim($line = $lines[$i]) !== $fence) {
+                $block['content'][] = $line;
+            } else {
+                // stop consuming when code block is over
+                break;
+            }
+        }
+        return [$block, $i];
+    }    
+    
+    protected function renderFencedCode($block)
+    {
+        $class = isset($block['language']) ? ' class="prettyprint lang-' . $block['language'] . '"' : '';
+        return "<pre><code$class>" . htmlspecialchars(implode("\n", $block['content']) . "\n", ENT_NOQUOTES, 'UTF-8') . '</code></pre>';
+    }
+}
+
+function embed_prettify($args, $content=null)
+{ 
+    return '<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>';
+}
 
 function embed_markdown($args, $content=null)
 { 
@@ -54,25 +98,26 @@ function embed_markdown($args, $content=null)
   }	
   $url = $args['url'];	
 
+  error_log("naildown: $url");
+
   $prefix = '';
   if (array_key_exists('prefix', $args))
   {
       $prefix = $args['prefix'];	
 	  echo "<a href='" . $url . "'>" . $prefix . "</a>";
   }	
-	
+      
   $page = file_get_contents($url);
   if ($page == null)
   {
-	  //echo "mdurl error: [could not fetch: " . $url . "]";
+	  echo "naildown error: [could not fetch: " . $url . "]";
   }
   else
   {
-	  // code_class_prefix = "prettyprint lang-"
-    return $prefix . MarkdownExtra::defaultTransform($page);	  
+      $parser = new NaildownParser();
+      return $parser->parse($page);	  
   }	
 }
-
 
 
 /**

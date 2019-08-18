@@ -11,17 +11,29 @@ This plugin adds the [naildown url="/some.md"] shortcode that enabled you to emb
 
 == Description ==
 
-See above.
+Usage: 
+
+[naildown-pretty]                   // this adds prettify syntax highlighting for fenced code-blocks 
+
+for example, if the markdown contains:
+```cpp
+    void foo() {}
+```
+
+it will render the code block with c++ syntax highlighting                                            `
+
+[naildown url="/some.md"] 
+[naildown url="/someother.md"]
 
 == Installation ==
 
 1. Upload the `naildown-plugin` folder to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `[naildown url="/some.md"]` in your posts or pages.
+1. Place `[naildown url="/some.md"]` and optionall `[naildown-pretty] ` before it, in your posts or pages.
 
 == Frequently Asked Questions ==
 
 What is the matrix?
 
-I can't tell you what the matrix is, it has to be seen.
+Unfortunately, no one can be told what the matrix is, you have to see it for yourself.
 

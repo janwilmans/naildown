@@ -27,12 +27,12 @@
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
-	die;
+    die;
 }
 
 /*
 todos:
- * if remove markdown files contain relative paths, how are they parsed ? maybe https://github.com/monkeysuffrage/phpuri or pguardiario/phpuri can be used? 
+ * if remove markdown files contain relative paths, how are they parsed ? maybe https://github.com/monkeysuffrage/phpuri or pguardiario/phpuri can be used?
  * add embedding anchors to headings (H2?) so you can link directly to a sub-chapter ?
  * add filter on section/anchor in url, so you can embed a chapter of a remote markdown file ? or all chapters starting from a heading?
        This can be used to have a different intro on github vs wordpress but share the rest of the content, for example to have a different excerpt ?
@@ -76,8 +76,8 @@ class NaildownParser extends \cebe\markdown\GithubMarkdown
             }
         }
         return [$block, $i];
-    }    
-    
+    }
+
     protected function renderFencedCode($block)
     {
         $class = isset($block['language']) ? ' class="prettyprint lang-' . $block['language'] . '"' : '';
@@ -86,37 +86,37 @@ class NaildownParser extends \cebe\markdown\GithubMarkdown
 }
 
 function embed_prettify($args, $content=null)
-{ 
+{
     return '<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>';
 }
 
 function embed_markdown($args, $content=null)
-{ 
-  if (!array_key_exists('url', $args)) {
-    echo "naildown: url attribute missing from shortcode?";
-	return;
-  }	
-  $url = $args['url'];	
+{
+    if (!array_key_exists('url', $args)) {
+        echo "naildown: url attribute missing from shortcode?";
+        return;
+    }
+    $url = $args['url'];
 
-  error_log("naildown: $url");
+    //error_log("naildown: $url");
 
-  $prefix = '';
-  if (array_key_exists('prefix', $args))
-  {
-      $prefix = $args['prefix'];	
-	  echo "<a href='" . $url . "'>" . $prefix . "</a>";
-  }	
-      
-  $page = file_get_contents($url);
-  if ($page == null)
-  {
-	  echo "naildown error: [could not fetch: " . $url . "]";
-  }
-  else
-  {
-      $parser = new NaildownParser();
-      return $parser->parse($page);	  
-  }	
+    $prefix = '';
+    if (array_key_exists('prefix', $args))
+    {
+        $prefix = $args['prefix'];
+        echo "<a href='" . $url . "'>" . $prefix . "</a>";
+    }
+
+    $page = file_get_contents($url);
+    if ($page == null)
+    {
+        echo "naildown error: [could not fetch: " . $url . "]";
+    }
+    else
+    {
+        $parser = new NaildownParser();
+        return $parser->parse($page);
+    }
 }
 
 
@@ -132,9 +132,9 @@ define( 'NAILDOWN_PLUGIN_VERSION', '1.0.0' );
  * This action is documented in includes/class-naildown-plugin-activator.php
  */
 function activate_naildown_plugin() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-activator.php';
-	Naildown_Plugin_Activator::activate();
-    
+    require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-activator.php';
+    Naildown_Plugin_Activator::activate();
+
     update_option('naildown', 1);
     add_option('naildown', 0);
 }
@@ -144,8 +144,8 @@ function activate_naildown_plugin() {
  * This action is documented in includes/class-naildown-plugin-deactivator.php
  */
 function deactivate_naildown_plugin() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-deactivator.php';
-	Naildown_Plugin_Deactivator::deactivate();
+    require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-deactivator.php';
+    Naildown_Plugin_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_naildown_plugin' );
@@ -168,8 +168,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin.php';
  */
 function run_naildown_plugin() {
 
-	$plugin = new Naildown_Plugin();
-	$plugin->run();
+    $plugin = new Naildown_Plugin();
+    $plugin->run();
 
 }
 run_naildown_plugin();

@@ -26,18 +26,28 @@
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
+if (!defined('WPINC')) {
     die;
 }
 
 /*
-todos:
- * if remove markdown files contain relative paths, how are they parsed ? maybe https://github.com/monkeysuffrage/phpuri or pguardiario/phpuri can be used?
+    Features:
+        - transforms relative paths from linked documents to absolute paths 
+        - GitHub flavored markdown 
+        - syntax highlighting of fenced blocks
+    
  * add embedding anchors to headings (H2?) so you can link directly to a sub-chapter ?
  * add filter on section/anchor in url, so you can embed a chapter of a remote markdown file ? or all chapters starting from a heading?
-       This can be used to have a different intro on github vs wordpress but share the rest of the content, for example to have a different excerpt ?
- * add/embed https://github.com/google/code-prettify
-*/
+   This can be used to have a different intro on github vs wordpress but share the rest of the content, for example to have a different excerpt ?
+ * add/embed https://github.com/google/code-prettify so its hosted locally.
+ * add support for 
+ *
+ 
+(empty line)
+[comment]: # (naildown@section-start)
+[comment]: # (naildown@section-end)
+
+ */
 
 require __DIR__ . '/vendor/autoload.php';
 require_once 'phpuri.php';
@@ -47,6 +57,50 @@ add_shortcode('naildown', 'embed_markdown');
 
 // https://github.com/janwilmans/depcharter/blob/master/README.md
 // https://github.com/janwilmans/depcharter/raw/master/README.md
+
+/*
+use DOMDocument;
+$doc = new DOMDocument();
+@$doc->loadHTML($html, LIBXML_HTML_NODEFDTD);
+foreach (['img','a'] as $tag) {
+    $nodes = $doc->getElementsByTagName($tag);
+    foreach ($nodes as $node) {
+       ... do stuff here
+    }
+}
+*/
+
+/*
+
+This can be added to Apperence->Customize->Customize CSS to make the code block render more compact:
+
+pre {
+	padding: 0px;
+	padding-top: 5px;
+	border-radius: 5px;
+	font-size: 80%;
+}
+
+code.prettyprint {
+	line-height: 1.2;
+}
+
+li.L0, li.L1, li.L2, li.L3, li.L4,
+li.L5, li.L6, li.L7, li.L8, li.L9{
+  list-style-type: decimal !important;
+	color: #ababab;
+}
+
+*/
+
+// test the regular expression at https://regex101.com/r/AwnWuS/12
+function absolutify($url, $page)
+{
+    $pattern = '/(?:src|action|href)=[\'"]\K\/(?!\/)[^\'"]*/';
+    $dirname = dirname($url);
+    $out =  preg_replace($pattern, "${dirname}/$0", $page);
+    return $out;
+}
 
 class NaildownParser extends \cebe\markdown\GithubMarkdown
 {
@@ -67,7 +121,7 @@ class NaildownParser extends \cebe\markdown\GithubMarkdown
         }
 
         // consume all lines until ```
-        for($i = $current + 1, $count = count($lines); $i < $count; $i++) {
+        for ($i = $current + 1, $count = count($lines); $i < $count; $i++) {
             if (rtrim($line = $lines[$i]) !== $fence) {
                 $block['content'][] = $line;
             } else {
@@ -78,19 +132,73 @@ class NaildownParser extends \cebe\markdown\GithubMarkdown
         return [$block, $i];
     }
 
+    // assign prettyprint class to <code> blocks
     protected function renderFencedCode($block)
     {
-        $class = isset($block['language']) ? ' class="prettyprint lang-' . $block['language'] . '"' : '';
+        $class = isset($block['language']) ? ' class="prettyprint linenums lang-' . $block['language'] . '"' : '';
         return "<pre><code$class>" . htmlspecialchars(implode("\n", $block['content']) . "\n", ENT_NOQUOTES, 'UTF-8') . '</code></pre>';
     }
 }
 
-function embed_prettify($args, $content=null)
+function embed_prettify($args, $content = null)
 {
     return '<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>';
 }
 
-function embed_markdown($args, $content=null)
+
+function transform_markdown_to_html($page)
+{
+    $parser = new NaildownParser();
+    return $parser->parse($page);
+}
+
+
+function get_lines($string)
+{
+    return preg_split("/(\r\n|\n|\r)/", $string);
+}
+
+
+function contains($haystack, $needle)
+{
+    return strpos($haystack, $needle) !== false;
+}
+
+
+function crop_to_naildown_section($page)
+{
+    $result = array();
+    $search_for_begin = true;
+    $section_begin = 0;
+
+    $lines = get_lines($page);
+    foreach ($lines as $i=>$line) 
+    {
+        if (contains($line, 'naildown@section'))
+        {
+            if ($search_for_begin)
+            {
+                $section_begin = $i + 1;
+                $search_for_begin = false;
+            }
+            else
+            {
+                $section_end = $i;
+                $length = $section_end - $section_begin;
+                $result = array_merge($result, array_slice($lines, $section_begin, $length));
+                $search_for_begin = true;
+            }
+        }
+    }
+    
+    if ($search_for_begin == false)
+    {
+        $result = array_merge($result, array_slice($lines, $section_begin));
+    }
+    return implode("\n", $result);
+}
+
+function embed_markdown($args, $content = null)
 {
     if (!array_key_exists('url', $args)) {
         echo "naildown: url attribute missing from shortcode?";
@@ -98,41 +206,28 @@ function embed_markdown($args, $content=null)
     }
     $url = $args['url'];
 
-    //error_log("naildown: $url");
-
-    $prefix = '';
-    if (array_key_exists('prefix', $args))
-    {
-        $prefix = $args['prefix'];
-        echo "<a href='" . $url . "'>" . $prefix . "</a>";
-    }
-
     $page = file_get_contents($url);
-    if ($page == null)
-    {
+    if ($page == null) {
         echo "naildown error: [could not fetch: " . $url . "]";
+        return;
     }
-    else
-    {
-        $parser = new NaildownParser();
-        return $parser->parse($page);
-    }
+    return absolutify($url, transform_markdown_to_html(crop_to_naildown_section($page)));
 }
-
 
 /**
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'NAILDOWN_PLUGIN_VERSION', '1.0.0' );
+define('NAILDOWN_PLUGIN_VERSION', '1.0.0');
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-naildown-plugin-activator.php
  */
-function activate_naildown_plugin() {
-    require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-activator.php';
+function activate_naildown_plugin()
+{
+    require_once plugin_dir_path(__FILE__) . 'includes/class-naildown-plugin-activator.php';
     Naildown_Plugin_Activator::activate();
 
     update_option('naildown', 1);
@@ -143,19 +238,20 @@ function activate_naildown_plugin() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-naildown-plugin-deactivator.php
  */
-function deactivate_naildown_plugin() {
-    require_once plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin-deactivator.php';
+function deactivate_naildown_plugin()
+{
+    require_once plugin_dir_path(__FILE__) . 'includes/class-naildown-plugin-deactivator.php';
     Naildown_Plugin_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_naildown_plugin' );
-register_deactivation_hook( __FILE__, 'deactivate_naildown_plugin' );
+register_activation_hook(__FILE__, 'activate_naildown_plugin');
+register_deactivation_hook(__FILE__, 'deactivate_naildown_plugin');
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin.php';
+require plugin_dir_path(__FILE__) . 'includes/class-naildown-plugin.php';
 
 /**
  * Begins execution of the plugin.
@@ -166,7 +262,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-naildown-plugin.php';
  *
  * @since    1.0.0
  */
-function run_naildown_plugin() {
+function run_naildown_plugin()
+{
 
     $plugin = new Naildown_Plugin();
     $plugin->run();

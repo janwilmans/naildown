@@ -29,6 +29,7 @@ Footer text
 ```
 
 This would render only the 'Sub title' section and the options, but not the Main Title nor the Footer text.
+
 Special attention has been paid to rendering source code sections.
 
 If you add:

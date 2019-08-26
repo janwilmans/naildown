@@ -40,8 +40,6 @@ if (!defined('WPINC')) {
  * add filter on section/anchor in url, so you can embed a chapter of a remote markdown file ? or all chapters starting from a heading?
    This can be used to have a different intro on github vs wordpress but share the rest of the content, for example to have a different excerpt ?
  * add/embed https://github.com/google/code-prettify so its hosted locally.
- * add support for 
- *
  
 (empty line)
 [comment]: # (naildown@section-start)
@@ -189,7 +187,11 @@ function contains($haystack, $needle)
     return strpos($haystack, $needle) !== false;
 }
 
-
+// searches markdown for section-markers in comments 
+// [comment]: # (naildown@section-start
+//   your content here
+// [comment]: # (naildown@section-end
+//
 function crop_to_naildown_section($page)
 {
     $result = array();

@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: @janwilmans
 Donate link: https://twitter.com/janwilmans
-Tags: comments, spam
+Tags: markdown
 Requires at least: 3.0.1
 Tested up to: 5.5.2
 License: GPLv2 or later
@@ -16,14 +16,18 @@ Usage:
 [naildown-pretty]                   // this adds prettify syntax highlighting for fenced code-blocks 
 
 for example, if the markdown contains:
-```cpp
-    void foo() {}
-```
+    ```cpp
+         void foo() {}
+    ```
 
 it will render the code block with c++ syntax highlighting                                            `
 
 [naildown url="/some.md"] 
 [naildown url="/someother.md"]
+
+== More details
+
+see https://github.com/janwilmans/naildown/blob/master/documentation/usage.md
 
 == Installation ==
 

@@ -37,12 +37,9 @@ If you add:
 ```
 at the top of the document (once), it will include (prettify)[https://github.com/google/code-prettify] in the document to syntax-highlight the code. It has language auto-detection, but you can also specify the language:
 
-```
-\`\`\`cpp
-enum class Foo{};
-\`\`\`
-```
-
+    ```cpp
+         enum class Foo{};
+    ```
 
 
 ```css

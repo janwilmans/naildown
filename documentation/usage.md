@@ -29,9 +29,10 @@ Footer text
 ```
 
 This would render only the 'Sub title' section and the options, but not the Main Title nor the Footer text.
+Special attention has been paid to rendering source code sections.
 
 
-```
+```css
 This can be added to Apperence->Customize->Customize CSS to make the code block render more compact:
 
 pre {

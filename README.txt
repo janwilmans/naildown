@@ -27,7 +27,7 @@ it will render the code block with c++ syntax highlighting                      
 
 == More details
 
-see the [documentation](https://github.com/janwilmans/naildown/blob/master/documentation/usage.md) page.
+see https://github.com/janwilmans/naildown/blob/master/documentation/usage.md
 
 == Installation ==
 

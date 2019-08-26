@@ -16,14 +16,18 @@ Usage:
 [naildown-pretty]                   // this adds prettify syntax highlighting for fenced code-blocks 
 
 for example, if the markdown contains:
-```cpp
-    void foo() {}
-```
+    ```cpp
+         void foo() {}
+    ```
 
 it will render the code block with c++ syntax highlighting                                            `
 
 [naildown url="/some.md"] 
 [naildown url="/someother.md"]
+
+== More details
+
+see the [documentation](https://github.com/janwilmans/naildown/blob/master/documentation/usage.md) page.
 
 == Installation ==
 

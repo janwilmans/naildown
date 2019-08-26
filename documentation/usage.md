@@ -35,12 +35,11 @@ If you add:
 ```
 [naildown-pretty]
 ```
-at the top of the document (once), it will include (prettify)[https://github.com/google/code-prettify] in the document to syntax-highlight the code. It has language auto-detection, but you can also specify the language:
+at the top of the document (once), it will include [prettify](https://github.com/google/code-prettify) in the document to syntax-highlight the code. It has language auto-detection, but you can also specify the language after the tripple backtick:
 
     ```cpp
          enum class Foo{};
     ```
-
 
 ```css
 This can be added to Apperence->Customize->Customize CSS to make the code block render more compact:

@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: @janwilmans
 Donate link: https://twitter.com/janwilmans
-Tags: comments, spam
+Tags: markdown
 Requires at least: 3.0.1
 Tested up to: 5.5.2
 License: GPLv2 or later

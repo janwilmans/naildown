@@ -31,6 +31,19 @@ Footer text
 This would render only the 'Sub title' section and the options, but not the Main Title nor the Footer text.
 Special attention has been paid to rendering source code sections.
 
+If you add:
+```
+[naildown-pretty]
+```
+at the top of the document (once), it will include (prettify)[https://github.com/google/code-prettify] in the document to syntax-highlight the code. It has language auto-detection, but you can also specify the language:
+
+```
+\`\`\`cpp
+enum class Foo{};
+\`\`\`
+```
+
+
 
 ```css
 This can be added to Apperence->Customize->Customize CSS to make the code block render more compact:
